@@ -1,0 +1,10 @@
+{
+    "movets.filesToScan": [
+        "**/*.js",
+        "**/*.css",
+        "**/*.ts",
+        "**/*.tsx"
+    ],
+    "movets.relativeToTsconfig": true,
+    "movets.openEditors": true
+}

@@ -1,0 +1,33 @@
+{
+    "imagesAssetsPath": "/images/",
+
+    "images": [
+        {
+            "url": "doctor-book-appointment.png"
+        },
+
+        {
+            "url": "doctor-group.png"
+        },
+
+        {
+            "url": "doctor-picture.png"
+        },
+
+        {
+            "url": "profile-1.png"
+        },
+
+        {
+            "url": "profile-2.png"
+        },
+
+        {
+            "url": "profile-3.png"
+        },
+
+        {
+            "url": "profile-4.png"
+        }
+    ]
+}
