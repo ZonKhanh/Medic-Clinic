@@ -5,29 +5,29 @@ import { JwtAuthGuard } from "./guards/jwt-auth.guard";
 
 @Controller('api/v1/auth')
 export class AuthController {
-    constructor(private readonly authService: AuthService) {}
+    constructor(private readonly authService: AuthService) { }
 
     @Post('/signup')
-    async signup(@Res() response, @Body() createUserDto: CreateUserDto) {
-        try {
-            const newUser = await this.authService.signup(createUserDto);
-            return response.status(HttpStatus.CREATED).json({
-                message: 'User has been created successfully',
-                user: newUser,
-            });
-        } catch (err) {
-            return response.status(HttpStatus.BAD_REQUEST).json({
-                statusCode: 400,
-                message: 'Error: User not created!',
-                error: 'Bad Request'
-            });
-        }
+    async signup(@Body() createUserDto: CreateUserDto) {
+        return this.authService.signup(createUserDto);
     }
 
     @Post('/signin')
     async signin(@Body() user: Partial<CreateUserDto>) {
         return this.authService.signin(user);
     }
+
+  
+    @UseGuards(JwtAuthGuard)
+    @Post('/change-password')
+    async changePassword(
+        @Req() req,
+        @Body() body: { oldPassword: any; newPassword: string; confirmNewPassword: string }
+    ) {
+        const userId = req.user.userId; // Extract user ID from JWT token
+        return this.authService.changePassword(userId, body.oldPassword, body.newPassword, body.confirmNewPassword);
+    }
+
 
     @Post('/logout')
     @UseGuards(JwtAuthGuard) // Sử dụng guard để bảo vệ route

@@ -5,7 +5,7 @@ import { UserController } from './user.controller';
 import { UserService } from './user.service';
 import { User, UserSchema } from './schema/user.schema';
 import { secret } from '../../utils/constants';
-import { FileUploadModule } from '../media/file-upload.module';
+// import { FileUploadModule } from '../media/file-upload.module';
 
 @Module({
   imports: [
@@ -14,7 +14,7 @@ import { FileUploadModule } from '../media/file-upload.module';
       secret,
       signOptions: { expiresIn: '2h' },
     }),
-    FileUploadModule
+    // FileUploadModule
   ],
   controllers: [UserController],
   providers: [UserService],

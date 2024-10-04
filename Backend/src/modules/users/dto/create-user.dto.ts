@@ -1,68 +1,61 @@
-import { Prop } from "@nestjs/mongoose";
-import {
-    IsString,
-    IsDefined,
-    IsNotEmpty,
-    IsBoolean,
-    IsInt,
-    IsArray,
-    IsOptional,
-    ArrayUnique,
-    ArrayNotEmpty,
-    IsEmail,
-    IsIn,
-  } from "class-validator";
+import { IsString, IsNotEmpty, IsInt, IsOptional, IsEmail, IsEnum, MaxLength, MinLength } from "class-validator";
 import { Gender, UserRole, UserStatus } from "src/config/constants";
-  
-  export class CreateUserDto {
+import { Type } from 'class-transformer';
 
-    @IsNotEmpty()
-    firstName: string;
+export class CreateUserDto {
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(100)
+  firstName: string;
 
-    @IsNotEmpty()
-    lastName: string;
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(100)
+  lastName: string;
 
-    @IsEmail()
-    @IsNotEmpty()
-    email: string;
+  @IsEmail()
+  @IsNotEmpty()
+  @MaxLength(100)
+  email: string;
 
-    @IsNotEmpty()
-    password: string;
+  @IsString()
+  @IsNotEmpty()
+  @MinLength(8)
+  @MaxLength(100)
+  password: string;
 
-    @IsOptional()
-    phoneNumber: string;
+  @IsString()
+  @IsOptional()
+  @MaxLength(20)
+  phoneNumber?: string;
 
-    @IsOptional()
-    address: string;
+  @IsString()
+  @IsOptional()
+  @MaxLength(255)
+  address?: string;
 
-    @IsInt()
-    @IsOptional()
-    gender: Gender = Gender.MALE;
+  @IsEnum(Gender)
+  @IsOptional()
+  gender?: Gender = Gender.MALE;
 
-    @IsOptional() 
-    dob: Date;  
+  @IsOptional()
+  @Type(() => Date)
+  dob?: Date;
 
-    @IsString()
-    @IsOptional()
-    avatarUrl: string;
+  @IsEnum(UserRole)
+  @IsNotEmpty()
+  role: UserRole;
 
-    @IsInt()
-    role: UserRole;
+  @IsEnum(UserStatus)
+  @IsOptional()
+  status: UserStatus = UserStatus.ACTIVE;
 
-    @IsInt()
-    @IsOptional()
-    status: number = UserStatus.ACTIVE;
+  @IsString()
+  @IsOptional()
+  @MaxLength(255)
+  avatarUrl?: string;
 
-    @IsOptional()
-    @Prop([String])
-    avatarUrls: string[];
-
+  @IsOptional()
+  @IsString()
+  createdBy?: string;
 }
-  
-  export class UsersDTO {
-    @ArrayUnique()
-    @ArrayNotEmpty()
-    @IsArray()
-    userIds: string[];
-  }
-  

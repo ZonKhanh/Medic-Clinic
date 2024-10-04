@@ -1,10 +1,11 @@
-import { Body, Controller, Delete, Get, HttpStatus, Param, Post, Put, Req, Res, Query, UseInterceptors, UploadedFile, UseGuards } from "@nestjs/common";
+import { Body, Controller, Delete, Get, HttpStatus, Param, Post, Put, Req, Res, Query, UseInterceptors, UploadedFile, UseGuards, HttpException } from "@nestjs/common";
 import { FileInterceptor } from "@nestjs/platform-express";
 import { CreateUserDto } from "./dto/create-user.dto";
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserService } from "./user.service";
 import { UserRole } from '../../config/constants';
 import { diskStorage } from 'multer';
+import { extname } from 'path';
 import  path from 'path';
 import { UPLOAD } from "../../config/constants";
 import { Roles } from "../auth/decorators/roles.decorator";
@@ -20,10 +21,10 @@ export class UserController {
     ) { }
 
     @Roles(UserRole.ADMIN)
-    @Post('add') // Đánh dấu phương thức này là một route handler cho HTTP POST request đến đường dẫn '/add
-    async addUser(@Body() createUserDto: CreateUserDto) {
-        // Phương thức xử lý POST request với dữ liệu từ body
-        return this.userService.create(createUserDto); // Gọi phương thức create trong userService để tạo người dùng mới
+    @Post('add')
+    async addUser(@Body() createUserDto: CreateUserDto, @Req() req) {
+      const createdBy = req.user.userId; // Lấy ID của người dùng hiện tại từ request
+      return this.userService.create(createUserDto, createdBy);
     }
 
     @Get('/getuser')
@@ -62,21 +63,11 @@ export class UserController {
 
     @Roles(UserRole.ADMIN)
     @Put('update/:id')
-    async updateUser(@Res() response, @Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-        try {
-            const user = await this.userService.update(id, updateUserDto);
-            return response.status(HttpStatus.OK).json({
-                message: 'User has been successfully updated',
-                user,
-            });
-        } catch (err) {
-            return response.status(HttpStatus.BAD_REQUEST).json({
-                statusCode: 400,
-                message: 'Error: User not updated!',
-                error: 'Bad Request'
-            });
-        }
+    async updateUser(@Req() req, @Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
+        const updateBy = req.user.id; // Lấy userId của người dùng hiện tại
+        return this.userService.update(id, updateUserDto, updateBy);
     }
+    
 
     @Roles(UserRole.ADMIN)
     @Delete('delete/:id')
@@ -99,30 +90,41 @@ export class UserController {
     @Roles(UserRole.ADMIN)
     @Put('update-avatar/:id')
     @UseInterceptors(FileInterceptor('avatar', {
-
-        fileFilter: (req, file, cb) => {
-
-            console.log(file); // Ghi log đối tượng file
-            if (!file) {
-                return cb(new Error('Không có file nào được cung cấp'), false);
+        storage: diskStorage({
+            destination: './uploads',
+            filename: (req, file, callback) => {
+                const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+                const ext = extname(file.originalname);
+                const filename = `${uniqueSuffix}${ext}`;
+                callback(null, filename);
+            },
+        }),
+        fileFilter: (req, file, callback) => {
+            if (!file.originalname.match(/\.(jpg|jpeg|png|gif)$/)) {
+                return callback(new Error('Only image files are allowed!'), false);
             }
-        
-            // if (UPLOAD.EXTENSION.includes(path.extname(file.originalname).toLowerCase())) {
-            //     cb(null, true);
-            // } else {
-            //     cb(new Error('Loại file không hợp lệ'), false);
-            // }
+            callback(null, true);
         },
-        
         limits: {
-            fileSize: 5 * 1024 * 1024, // 5MB
+            fileSize: 1024 * 1024 * 5 // 5MB
         }
     }))
     async updateAvatar(@Param('id') id: string, @UploadedFile() file: Express.Multer.File) {
-        const updatedUser = await this.userService.updateAvatar(id, file);
-        return {
-            message: 'Avatar updated successfully',
-            user: updatedUser
-        };
+        if (!file) {
+            throw new HttpException('No file uploaded', HttpStatus.BAD_REQUEST);
+        }
+
+        try {
+            const avatarUrl = file.path;
+            const updatedUser = await this.userService.updateAvatar(id, avatarUrl);
+            return {
+                statusCode: HttpStatus.OK,
+                message: 'Avatar updated successfully',
+                user: updatedUser
+            };
+        } catch (error) {
+            console.error('Error updating avatar:', error);
+            throw new HttpException('Error updating avatar', HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 }

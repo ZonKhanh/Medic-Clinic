@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { signin, signup } from '../../../services/auth';
 import { toast } from "react-toastify";
 import Navbar from "../Home/Navbar/Navbar";
+import Doctor from "../../../Assets/doctor-login.png";
 import './Auth.css';
 
 const Auth = () => {
@@ -31,7 +32,6 @@ const Auth = () => {
     e.preventDefault();
     if (isSubmitDisabled) return;
 
-    // Kiểm tra mật khẩu và xác nhận mật khẩu khớp nhau
     if (isSignup && password !== confirmPassword) {
       toast.error("Mật khẩu không khớp", {
         position: toast.POSITION.BOTTOM_RIGHT
@@ -87,7 +87,7 @@ const Auth = () => {
     background: 'linear-gradient(to right, #ECF2FF, #FBFCFF)',
     display: windowWidth < 768 ? 'none' : 'flex',
     flexDirection: 'column',
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
     alignItems: 'center',
     padding: '20px',
     textAlign: 'center',
@@ -96,33 +96,47 @@ const Auth = () => {
     boxShadow: '5px 0 15px rgba(0, 0, 0, 0.1)',
   };
 
+  const imageContainerStyle = {
+    position: 'relative',
+    width: '100%',
+    // marginTop: '40px', // Increased spacing
+  };
+
+  const imageStyle = {
+    maxWidth: '70%',
+    maxHeight: '100%',
+    objectFit: 'contain',
+    borderRadius: '10px',
+    margin: 'auto',
+  };
+
   const sloganStyle = {
     fontSize: windowWidth < 1024 ? '2rem' : '2.5rem',
     fontWeight: 'bold',
+    marginTop: '20px',
     marginBottom: '20px',
     textShadow: '2px 2px 4px rgba(0,0,0,0.1)',
     zIndex: 1,
-    animation: 'float 6s ease-in-out infinite',
   };
 
   const descriptionStyle = {
     fontSize: windowWidth < 1024 ? '1rem' : '1.2rem',
-    maxWidth: '80%',
+    maxWidth: '100%',
     lineHeight: '1.6',
     textShadow: '1px 1px 2px rgba(0,0,0,0.1)',
+    textAlign: 'center', // Căn giữa văn bản theo chiều ngang
     zIndex: 1,
-    animation: 'float 6s ease-in-out infinite 0.5s',
   };
 
   const animationStyle = {
     position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
+    
+    // top: 0,
+    // left: 0,
+    // right: 0,
+    // bottom: 0,
     background: 'linear-gradient(45deg, #ECF2FF, #FBFCFF, #ECF2FF)',
     backgroundSize: '400% 400%',
-    animation: 'gradientAnimation 15s ease infinite',
   };
 
   const formFrameStyle = {
@@ -196,17 +210,25 @@ const Auth = () => {
         {windowWidth >= 768 && (
           <div style={imageFrameStyle}>
             <div style={animationStyle}></div>
-            <h1 style={sloganStyle}>Chăm sóc sức khỏe tận tâm</h1>
-            <p style={descriptionStyle}>
-              Phòng khám của chúng tôi cam kết mang đến dịch vụ y tế chất lượng cao,
-              với đội ngũ bác sĩ giàu kinh nghiệm và trang thiết bị hiện đại.
-              Sức khỏe của bạn là ưu tiên hàng đầu của chúng tôi.
-            </p>
+            <div>
+              <h1 style={sloganStyle}>Chăm sóc sức khỏe tận tâm</h1>
+              <p style={descriptionStyle}>
+                Phòng khám của chúng tôi cam kết mang đến dịch vụ y tế chất lượng cao,
+                với đội ngũ bác sĩ giàu kinh nghiệm và trang thiết bị hiện đại.
+                Sức khỏe của bạn là ưu tiên hàng đầu của chúng tôi.
+              </p>
+            </div>
+            <div style={imageContainerStyle}>
+              <img src={Doctor} alt="Doctor" style={imageStyle} />
+            </div>
             <div className="floating-icon" style={{ animation: 'float 4s ease-in-out infinite' }}>🏥</div>
-            <div className="floating-icon" style={{ animation: 'float 5s ease-in-out infinite 1s' }}>👨‍⚕️</div>
-            <div className="floating-icon" style={{ animation: 'float 6s ease-in-out infinite 0.5s' }}>💊</div>
-            <div className="floating-icon" style={{ animation: 'float 5.5s ease-in-out infinite 0.7s' }}>🩺</div>
-            <div className="floating-icon" style={{ animation: 'float 4.5s ease-in-out infinite 1.2s' }}>💉</div>
+            <div className="floating-icon" style={{ animation: 'float 5s ease-in-out infinite 1s', left: '15%'}}>👨‍⚕️</div>
+            <div className="floating-icon" style={{ animation: 'float 6s ease-in-out infinite 0.5s' }}>🩹</div>
+            <div className="floating-icon" style={{ animation: 'float 5.5s ease-in-out infinite 0.7s', left: '-30%' }}>🩺</div>
+            <div className="floating-icon" style={{ animation: 'float 4.5s ease-in-out infinite 1.2s',left: '70%', top: '45%' }}>💉</div>
+            <div className="floating-icon" style={{ animation: 'float 5s ease-in-out infinite 0.3s', left: '48%', top: '62%' }}>🧬</div>
+            <div className="floating-icon" style={{ animation: 'float 4.8s ease-in-out infinite 0.9s', right: '5%', bottom: '20%' }}>🧪</div>
+            <div className="floating-icon" style={{ animation: 'float 5.2s ease-in-out infinite 0.6s', left: '20%', top: '40%' }}>💊</div>
           </div>
         )}
         <div style={formFrameStyle}>

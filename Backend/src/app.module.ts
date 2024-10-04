@@ -14,13 +14,13 @@ import { UserController } from './modules/users/user.controller';
 import { User, UserSchema } from './modules/users/schema/user.schema';
 import { isAuthenticated } from './app.middleware';
 import { AuthModule } from './modules/auth/auth.module';
-import { FileUploadModule } from './modules/media/file-upload.module';
-import { FileUploadService } from './modules/media/file-upload.service';
+// import { FileUploadModule } from './modules/media/file-upload.module';
+// import { FileUploadService } from './modules/media/file-upload.service';
 
 @Module({
   imports: [
     AuthModule,
-    FileUploadModule, ///
+    // FileUploadModule, ///
     MongooseModule.forRoot('mongodb://localhost:27017/medic-clinic'),
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
     MulterModule.register({
@@ -42,7 +42,7 @@ import { FileUploadService } from './modules/media/file-upload.service';
   ],
 
   controllers: [AppController, UserController],
-  providers: [AppService, UserService, FileUploadService],
+  providers: [AppService, UserService],
 })
 
 export class AppModule {
