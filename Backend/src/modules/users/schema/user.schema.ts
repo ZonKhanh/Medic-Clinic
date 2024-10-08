@@ -47,8 +47,8 @@ export class User {
   @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'User' })
   updatedBy: User;
 
-  @Prop({ type: String, ref: 'User' })
-  deletedBy?: MongooseSchema.Types.ObjectId;
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'User' })
+  deletedBy: User;
 
   @Prop()
   deletedAt?: Date;

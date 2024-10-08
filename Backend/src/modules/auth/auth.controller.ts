@@ -17,7 +17,6 @@ export class AuthController {
         return this.authService.signin(user);
     }
 
-  
     @UseGuards(JwtAuthGuard)
     @Post('/change-password')
     async changePassword(

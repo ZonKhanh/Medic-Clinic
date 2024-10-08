@@ -6,85 +6,57 @@ import { UserService } from "./user.service";
 import { UserRole } from '../../config/constants';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
-import  path from 'path';
-import { UPLOAD } from "../../config/constants";
 import { Roles } from "../auth/decorators/roles.decorator";
 import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 import { RolesGuard } from "../auth/guards/role.guard";
 
-@Controller('/api/v1/user') // Áp dụng cả JwtAuthGuard và RolesGuard cho toàn bộ controller
+@Controller('/api/v1/user')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class UserController {
-    constructor(
-        private readonly userService: UserService,
-        // private jwtService: JwtService
-    ) { }
+    constructor(private readonly userService: UserService) {}
 
     @Roles(UserRole.ADMIN)
     @Post('add')
     async addUser(@Body() createUserDto: CreateUserDto, @Req() req) {
-      const createdBy = req.user.userId; // Lấy ID của người dùng hiện tại từ request
-      return this.userService.create(createUserDto, createdBy);
+        const createdBy = req.user.userId;
+        return this.userService.create(createUserDto, createdBy);
     }
 
+    @Get()
+    async getAllUsers(@Query() query: any) {
+        return this.userService.findAllUsers(query);
+    }
+
+    @Roles(UserRole.ADMIN)
     @Get('/getuser')
-    async getUserByEmail(@Res() response, @Query('email') email: string) {
-        try {
-            const user = await this.userService.getOne(email);
-            return response.status(HttpStatus.OK).json({
-                message: 'User found successfully',
-                user,
-            });
-        } catch (err) {
-            return response.status(HttpStatus.NOT_FOUND).json({
-                statusCode: 404,
-                message: 'Error: User not found!',
-                error: 'Not Found'
-            });
-        }
+    async getUserByEmail(@Query('email') email: string) {
+        return this.userService.getOne(email);
     }
 
+    @Roles(UserRole.ADMIN)
     @Get('get/:id')
-    async getUserById(@Res() response, @Param('id') id: string) {
-        try {
-            const user = await this.userService.getById(id);
-            return response.status(HttpStatus.OK).json({
-                message: 'User found successfully',
-                user,
-            });
-        } catch (err) {
-            return response.status(HttpStatus.NOT_FOUND).json({
-                statusCode: 404,
-                message: 'Error: User not found!',
-                error: 'Not Found'
-            });
-        }
+    async getUserById(@Param('id') id: string) {
+        return this.userService.getById(id);
     }
 
     @Roles(UserRole.ADMIN)
     @Put('update/:id')
     async updateUser(@Req() req, @Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-        const updateBy = req.user.id; // Lấy userId của người dùng hiện tại
-        return this.userService.update(id, updateUserDto, updateBy);
+        const updatedBy = req.user.userId;
+        return this.userService.update(id, updateUserDto, updatedBy);
     }
-    
+
+    @Roles(UserRole.ADMIN)
+    @Delete('batch-delete')
+    async batchDeleteUsers(@Body('ids') ids: string[]) {
+      // Gọi hàm batchMoveToTrash với mảng ID
+      return this.userService.batchMoveToTrash(ids);
+    }
 
     @Roles(UserRole.ADMIN)
     @Delete('delete/:id')
-    async deleteUser(@Res() response, @Param('id') id: string) {
-        try {
-            const user = await this.userService.delete(id);
-            return response.status(HttpStatus.OK).json({
-                message: 'User has been deleted',
-                user,
-            });
-        } catch (err) {
-            return response.status(HttpStatus.BAD_REQUEST).json({
-                statusCode: 400,
-                message: 'Error: User not deleted!',
-                error: 'Bad Request'
-            });
-        }
+    async deleteUser(@Param('id') id: string) {
+        return this.userService.batchMoveToTrash([id]);
     }
 
     @Roles(UserRole.ADMIN)
@@ -114,17 +86,7 @@ export class UserController {
             throw new HttpException('No file uploaded', HttpStatus.BAD_REQUEST);
         }
 
-        try {
-            const avatarUrl = file.path;
-            const updatedUser = await this.userService.updateAvatar(id, avatarUrl);
-            return {
-                statusCode: HttpStatus.OK,
-                message: 'Avatar updated successfully',
-                user: updatedUser
-            };
-        } catch (error) {
-            console.error('Error updating avatar:', error);
-            throw new HttpException('Error updating avatar', HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+        const avatarUrl = file.path;
+        return this.userService.updateAvatar(id, avatarUrl);
     }
 }

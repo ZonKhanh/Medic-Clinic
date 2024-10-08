@@ -27,14 +27,19 @@ export class UserService {
     return user;
   }
 
-  async delete(id: string): Promise<User> {
-    const deletedUser = await this.userModel.findByIdAndDelete(id).exec();
-    if (!deletedUser) {
+  async findAllUsers(query: any = {}, options: any = {}): Promise<User[]> {
+    const excludedFields = ['-password', '-deletedAt', '-deletedBy', '-avatarUrl'];
+
+    const users = await this.userModel.find(query, excludedFields.join(' '), options).exec();
+
+    if (!users || users.length === 0) {
       throw new HttpException(ErrorService.USER_NOT_FOUND.message, HttpStatus.NOT_FOUND);
     }
-    return deletedUser;
+
+    return users;
   }
 
+  // Thêm users
   async create(createUserDto: CreateUserDto, createdBy: string): Promise<User> {
     // Kiểm tra các trường bắt buộc
     const requiredFields = ['email', 'phoneNumber', 'password', 'firstName', 'lastName', 'role'];
@@ -63,7 +68,7 @@ export class UserService {
       password: hash,
       status: UserStatus.ACTIVE,
       avatarUrl,
-      createdBy, // Thêm trường createdBy
+      createdBy,
     });
 
     const savedUser = await newUser.save();
@@ -74,26 +79,90 @@ export class UserService {
     return result;
   }
 
+  // Xóa mềm users
+  // Xóa nhiều người dùng cùng lúc
+  async batchMoveToTrash(ids: string[]): Promise<{ successMessages: string[], errorMessages: string[] }> {
+    const successMessages: string[] = [];
+    const errorMessages: string[] = [];
+
+    // Nếu chỉ có 1 ID thì bỏ qua vòng lặp kiểm tra
+    if (ids.length === 1) {
+      const user = await this.userModel.findById(ids[0]).exec();
+      if (!user) {
+        throw new HttpException(ErrorService.USER_NOT_FOUND.message, HttpStatus.NOT_FOUND);
+      }
+
+       // Kiểm tra nếu user đã ở trạng thái suspended
+       if (user.status === UserStatus.SUSPENDED) {
+        throw new HttpException('User is already suspended', HttpStatus.BAD_REQUEST);
+      }
+
+      // Cập nhật trạng thái của người dùng
+      user.status = UserStatus.SUSPENDED;
+      await user.save();
+      successMessages.push(`User with ID ${ids[0]} has been successfully moved to trash.`);
+      return { successMessages, errorMessages };
+    }
+
+    // Nếu có nhiều ID, kiểm tra từng người dùng
+    for (const id of ids) {
+      const user = await this.userModel.findById(id).exec();
+
+      if (!user) {
+        errorMessages.push(`User with ID ${id} not found.`);
+        continue; // Tiếp tục với người dùng tiếp theo
+      }
+
+      // Kiểm tra trạng thái
+      if (user.status === UserStatus.SUSPENDED) {
+        errorMessages.push(`User with ID ${id} cannot be moved to trash because status is APPENDING.`);
+        continue; // Tiếp tục với người dùng tiếp theo
+      }
+
+      // Cập nhật trạng thái thành APPENDING
+      user.status = UserStatus.SUSPENDED;
+      await user.save();
+      successMessages.push(`User with ID ${id} has been successfully moved to trash.`);
+    }
+
+    return { successMessages, errorMessages };
+  }
+
+
+  // Cập nhật thông tin users
   async update(id: string, updateUserDto: UpdateUserDto, updatedBy: string): Promise<User> {
+
+    // Kiểm tra nếu không có trường nào trong updateUserDto
+    if (!updateUserDto || Object.keys(updateUserDto).length === 0) {
+      throw new HttpException('No data fields provided for update', HttpStatus.BAD_REQUEST);
+    }
+
+    const existingEmail = await this.userModel.findOne({ email: updateUserDto.email }).exec();
+    if (existingEmail) {
+      throw new HttpException(ErrorService.USER_ERR_EMAIL_EXISTED.message, HttpStatus.BAD_REQUEST);
+    }
+
+    const existingPhone = await this.userModel.findOne({ phoneNumber: updateUserDto.phoneNumber }).exec();
+    if (existingPhone) {
+      throw new HttpException(ErrorService.PHONE_IS_EXISTED.message, HttpStatus.BAD_REQUEST);
+    }
+
     const updatedUser = await this.userModel.findByIdAndUpdate(
       id,
-      {
-        $set: { ...updateUserDto, updatedBy }, // Ghi lại người cập nhật
-      },
-      { new: true, runValidators: true },
+      { $set: { ...updateUserDto, updatedBy } }, // Cập nhật thông tin và ghi lại người cập nhật
+      { new: true, runValidators: true }
     ).exec();
 
     if (!updatedUser) {
-      throw new HttpException(ErrorService.USER_ERR_EMAIL_EXISTED.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(ErrorService.USER_NOT_FOUND.message, HttpStatus.NOT_FOUND);
     }
 
-    const savedUser = await updatedUser.save();
-    // Sử dụng toObject() và xóa trường password
-    const result = savedUser.toObject();
-    delete result.password;
+    const result = updatedUser.toObject();
+    delete result.password; // Xóa trường password khỏi kết quả trả về
 
     return result;
   }
+
 
   async updateAvatar(id: string, avatarUrl: string): Promise<User> {
     const updatedUser = await this.userModel.findByIdAndUpdate(
@@ -108,4 +177,8 @@ export class UserService {
 
     return updatedUser;
   }
+
+
+
+
 }

@@ -16,6 +16,7 @@ export class AuthService {
         private userService: UserService,
         private jwtService: JwtService,
         @InjectModel(User.name) private userModel: Model<UserDocument>,
+        @InjectModel('RevokedToken') private revokedTokenModel: Model<any>,
     ) { }
 
     async signup(createUserDto: CreateUserDto): Promise<User> {
@@ -121,13 +122,13 @@ export class AuthService {
     
         return { message: 'Password changed successfully' };
     }
-    
     async logout(token: string) {
-        this.revokedTokens.push(token);
+        await this.revokedTokenModel.create({ token });
         return { message: 'Logged out successfully' };
     }
 
-    isTokenRevoked(token: string): boolean {
-        return this.revokedTokens.includes(token);
+    async isTokenRevoked(token: string): Promise<boolean> {
+        const revokedToken = await this.revokedTokenModel.findOne({ token }).exec();
+        return !!revokedToken;
     }
 }
