@@ -1,5 +1,5 @@
-import { IsString, IsOptional, IsEmail, IsEnum, MaxLength, MinLength } from "class-validator";
-import { Gender, UserRole, UserStatus } from "src/config/constants";
+import { IsString, IsOptional, IsEmail, IsEnum, MaxLength, MinLength, IsNotEmpty } from "class-validator";
+import { Gender, UserRole, Status } from "src/config/constants";
 import { Type } from 'class-transformer';
 
 export class UpdateUserDto {
@@ -46,9 +46,9 @@ export class UpdateUserDto {
   @IsOptional()
   role?: UserRole;
 
-  @IsEnum(UserStatus)
+  @IsEnum(Status)
   @IsOptional()
-  status?: UserStatus;
+  status?: Status;
 
   @IsString()
   @IsOptional()
@@ -56,7 +56,7 @@ export class UpdateUserDto {
   avatarUrl?: string;
 
   @IsString()
-  @IsOptional()
+  @IsNotEmpty()
   updatedBy?: string;
   
 }

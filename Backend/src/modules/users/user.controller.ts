@@ -12,10 +12,10 @@ import { RolesGuard } from "../auth/guards/role.guard";
 
 @Controller('/api/v1/user')
 @UseGuards(JwtAuthGuard, RolesGuard)
+@Roles(UserRole.ADMIN)
 export class UserController {
-    constructor(private readonly userService: UserService) {}
+    constructor(private readonly userService: UserService) { }
 
-    @Roles(UserRole.ADMIN)
     @Post('add')
     async addUser(@Body() createUserDto: CreateUserDto, @Req() req) {
         const createdBy = req.user.userId;
@@ -27,39 +27,32 @@ export class UserController {
         return this.userService.findAllUsers(query);
     }
 
-    @Roles(UserRole.ADMIN)
-    @Get('/getuser')
-    async getUserByEmail(@Query('email') email: string) {
-        return this.userService.getOne(email);
-    }
-
-    @Roles(UserRole.ADMIN)
     @Get('get/:id')
     async getUserById(@Param('id') id: string) {
         return this.userService.getById(id);
     }
 
-    @Roles(UserRole.ADMIN)
+    @Roles(UserRole.PATIENT)
     @Put('update/:id')
     async updateUser(@Req() req, @Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
         const updatedBy = req.user.userId;
         return this.userService.update(id, updateUserDto, updatedBy);
     }
 
-    @Roles(UserRole.ADMIN)
     @Delete('batch-delete')
-    async batchDeleteUsers(@Body('ids') ids: string[]) {
-      // Gọi hàm batchMoveToTrash với mảng ID
-      return this.userService.batchMoveToTrash(ids);
+    async batchDeleteUsers(@Body('ids') ids: string[], @Req() req) {
+        const deletedBy = req.user.userId;
+        // Gọi hàm batchMoveToTrash với mảng ID
+        return this.userService.batchMoveToTrash(ids, deletedBy);
     }
 
-    @Roles(UserRole.ADMIN)
     @Delete('delete/:id')
-    async deleteUser(@Param('id') id: string) {
-        return this.userService.batchMoveToTrash([id]);
+    async deleteUser(@Param('id') id: string, @Req() req) {
+        const deletedBy = req.user.userId;
+        return this.userService.batchMoveToTrash([id], deletedBy);
     }
 
-    @Roles(UserRole.ADMIN)
+    @Roles(UserRole.PATIENT)
     @Put('update-avatar/:id')
     @UseInterceptors(FileInterceptor('avatar', {
         storage: diskStorage({
@@ -81,6 +74,7 @@ export class UserController {
             fileSize: 1024 * 1024 * 5 // 5MB
         }
     }))
+
     async updateAvatar(@Param('id') id: string, @UploadedFile() file: Express.Multer.File) {
         if (!file) {
             throw new HttpException('No file uploaded', HttpStatus.BAD_REQUEST);

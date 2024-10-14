@@ -1,19 +1,21 @@
-import { Module } from '@nestjs/common';
-import { MongooseModule } from '@nestjs/mongoose';
-import { DoctorController } from './doctor.controller';
+// doctor.module.ts
+import { forwardRef, Module } from '@nestjs/common';
 import { DoctorService } from './doctor.service';
-import { Doctor, DoctorSchema } from './schema/doctor.schema';
-import { DoctorSchedule, DoctorScheduleSchema } from './schema/doctor-schedule.schema';
+import { DoctorController } from './doctor.controller';
+import { UserModule } from '../users/user.module';
+import { AuthModule } from '../auth/auth.module';
+import { DepartmentModule } from '../departments/department.module';
+import { SharedModule } from 'src/SharedModule';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([
-      { name: Doctor.name, schema: DoctorSchema },
-      { name: DoctorSchedule.name, schema: DoctorScheduleSchema }
-    ])
+    SharedModule,
+    forwardRef(() => AuthModule),
+    forwardRef(() => UserModule),
+    forwardRef(() => DepartmentModule),
   ],
   controllers: [DoctorController],
   providers: [DoctorService],
-  exports: [DoctorService]
+  exports: [DoctorService],
 })
 export class DoctorModule {}

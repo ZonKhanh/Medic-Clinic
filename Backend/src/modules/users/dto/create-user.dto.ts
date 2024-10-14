@@ -1,5 +1,5 @@
-import { IsString, IsNotEmpty, IsInt, IsOptional, IsEmail, IsEnum, MaxLength, MinLength } from "class-validator";
-import { Gender, UserRole, UserStatus } from "src/config/constants";
+import { IsString, IsNotEmpty, IsOptional, IsEmail, IsEnum, MaxLength, MinLength, ValidateNested } from "class-validator";
+import { Gender, UserRole, Status } from "src/config/constants";
 import { Type } from 'class-transformer';
 
 export class CreateUserDto {
@@ -46,9 +46,9 @@ export class CreateUserDto {
   @IsNotEmpty()
   role: UserRole;
 
-  @IsEnum(UserStatus)
+  @IsEnum(Status)
   @IsOptional()
-  status: UserStatus = UserStatus.ACTIVE;
+  status: Status = Status.ACTIVE;
 
   @IsString()
   @IsOptional()
@@ -58,4 +58,6 @@ export class CreateUserDto {
   @IsOptional()
   @IsString()
   createdBy?: string;
+
+
 }

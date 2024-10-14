@@ -67,7 +67,6 @@ export const ErrorService = {
   USER_LOCKED: { code: 'USER_LOCKED', message: 'Tài khoản bị khóa tạm thời.' },
   IMEI_IS_WRONG: { code: 'IMEI_IS_WRONG', message: "Bạn phải đăng nhập với thiết bị đã đăng ký" },
   USER_IMEI_REQUIRED: { code: 'USER_IMEI_REQUIRED', message: "IMEI là trường bắt buộc." },
-  // USER_EMAIL_REQUIRED: { code: 'USER_EMAIL_REQUIRED', message: "Vui lòng nhập e-mail" },
   USER_CODE_REQUIRED: { code: 'USER_CODE_REQUIRED', message: 'Vui lòng nhập mã nhân viên.' },
   CODE_HAS_BEEN_REGISTERED: { code: 'CODE_HAS_BEEN_REGISTERED', message: 'Mã nhân viên đã được đăng ký.' },
   USER_EMAIL_HAS_BEEN_REGISTERED: { code: 'USER_EMAIL_HAS_BEEN_REGISTERED', message: 'E-mail đã được đăng ký.' },
@@ -203,6 +202,10 @@ export const ErrorService = {
   // SOUND
   AUDIO_NOT_CREATE: { code: 'AUDIO_NOT_CREATE', message: 'Không thể tạo audio.' },
 
+  // UPDATE
+  ERR_TITLE_EXISTED: { code: 'ERR_TITLE_EXISTED', message: "Tiêu đề đã tồn tại." },
+  
+  
 };
 
 export default ErrorService;

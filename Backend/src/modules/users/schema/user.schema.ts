@@ -1,16 +1,15 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { Gender, UserStatus, UserRole } from '../../../config/constants';
-import { Document, Schema as MongooseSchema } from "mongoose";
+import { Gender, Status, UserRole } from '../../../config/constants';
+import { Document, Types } from "mongoose";
+import { toVietnamTime } from "src/utils/timeUtil";
 
 export type UserDocument = User & Document;
 
 @Schema({
-  timestamps: true, // Tự động thêm createdAt và updatedAt
+  timestamps: { currentTime: toVietnamTime },
 })
-export class User {
-  @Prop({ type: MongooseSchema.Types.ObjectId, auto: true })
-  _id: MongooseSchema.Types.ObjectId;
 
+export class User {
   @Prop({ required: true, maxlength: 100, trim: true })
   firstName: string;
 
@@ -26,41 +25,39 @@ export class User {
   @Prop({ required: true, unique: true, maxlength: 20, sparse: true, trim: true })
   phoneNumber?: string;
 
-  @Prop({ required: false, maxlength: 255, trim: true })
+  @Prop({ maxlength: 255, trim: true })
   address?: string;
 
-  @Prop({ required: false, enum: Gender })
+  @Prop({ enum: Gender })
   gender?: Gender;
 
   @Prop({ required: true, enum: UserRole, index: true })
   role: UserRole;
 
-  @Prop({ required: true, enum: UserStatus, index: true, default: UserStatus.ACTIVE })
-  status: UserStatus;
+  @Prop({ required: true, enum: Status, index: true, default: Status.ACTIVE })
+  status: Status;
 
-  @Prop({ required: false, trim: true })
+  @Prop({ trim: true })
   avatarUrl?: string;
 
-  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'User' })
-  createdBy: User;
+  @Prop({ type: Types.ObjectId, ref: 'User' })
+  createdBy: Types.ObjectId;
 
-  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'User' })
-  updatedBy: User;
+  @Prop({ type: Types.ObjectId, ref: 'User' })
+  updatedBy: Types.ObjectId;
 
-  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'User' })
-  deletedBy: User;
+  @Prop({ type: Types.ObjectId, ref: 'User' })
+  deletedBy: Types.ObjectId;
 
-  @Prop()
+  @Prop({ type: Date })
   deletedAt?: Date;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
 
-// Thêm index cho các trường thường được sử dụng trong truy vấn
 UserSchema.index({ email: 1, phoneNumber: 1 });
 UserSchema.index({ role: 1, status: 1 });
 
-// Thêm các phương thức hoặc virtual properties nếu cần
 UserSchema.virtual('fullName').get(function(this: User) {
   return `${this.firstName} ${this.lastName}`;
 });

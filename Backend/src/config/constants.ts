@@ -3,15 +3,15 @@
  * @module constants/biz
  */
 
+// User
 export enum Gender {
   FEMALE = 0,
   MALE = 1,
 }
 
-export enum UserStatus {
-  INACTIVE = 0,
+export enum Status {
+  SUSPENDED = 0,
   ACTIVE = 1,
-  SUSPENDED = 2,
 }
 
 export enum UserRole {
@@ -21,7 +21,19 @@ export enum UserRole {
   RECEPTIONIST = 3
 }
 
-// ... (Các enum và const khác từ mẫu của bạn)
+// Department
+export enum DepartmentStatus {
+  INACTIVE = 0,
+  ACTIVE = 1,
+}
+
+// Doctor
+export enum AcademicDegree {
+  BACHELOR = 0, // Bằng Cử nhân
+  MASTER = 1, // Bằng Thạc sĩ
+  DOCTORATE = 2, // Bằng Tiến sĩ
+  PROFESSOR = 3, // Giáo sư
+}
 
 // config/constants.ts
 type SizeConfig = {

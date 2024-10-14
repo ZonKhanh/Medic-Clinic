@@ -1,23 +1,18 @@
-import { Module } from '@nestjs/common';
-import { MongooseModule } from '@nestjs/mongoose';
-import { JwtModule } from '@nestjs/jwt';
+import { forwardRef, Module } from '@nestjs/common';
 import { UserController } from './user.controller';
 import { UserService } from './user.service';
-import { User, UserSchema } from './schema/user.schema';
-import { secret } from '../../utils/constants';
-// import { FileUploadModule } from '../media/file-upload.module';
+import { DoctorModule } from '../doctors/doctor.module'
+import { AuthModule } from '../auth/auth.module';
+import { SharedModule } from 'src/SharedModule';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
-    JwtModule.register({
-      secret,
-      signOptions: { expiresIn: '2h' },
-    }),
-    // FileUploadModule
+    SharedModule,
+    forwardRef(() => DoctorModule),
+    forwardRef(() => AuthModule),
   ],
   controllers: [UserController],
   providers: [UserService],
-  exports: [UserService, MongooseModule],
+  exports: [UserService],
 })
 export class UserModule {}

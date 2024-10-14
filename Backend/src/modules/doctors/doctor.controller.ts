@@ -1,41 +1,47 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, Query, UseGuards, Req } from '@nestjs/common';
+// doctor.controller.ts
+import { Controller, Get, Post, Body, Param, Delete, Put, UseGuards, Req } from '@nestjs/common';
 import { DoctorService } from './doctor.service';
-import { CreateDoctorScheduleDto } from './dto/create-doctor-schedule.dto';
-import { UpdateDoctorScheduleDto } from './dto/update-doctoc-schedule.dto'
+import { CreateDoctorDto } from './dto/create-doctor.dto';
+// import { UpdateDoctorDto } from './dto/update-doctor.dto';
+import { UserRole } from 'src/config/constants';
+import { Roles } from '../auth/decorators/roles.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/role.guard';
-import { Roles } from '../auth/decorators/roles.decorator';
-import { UserRole } from 'src/config/constants';
+import { UpdateDoctorDto } from './dto/update-doctor.dto';
 
-
-@Controller('doctors')
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Controller('/api/v1/doctor')
+@Roles(UserRole.ADMIN, UserRole.DOCTOR)
 export class DoctorController {
   constructor(private readonly doctorService: DoctorService) {}
 
-  @Post('schedule')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN, UserRole.DOCTOR)
-  async createSchedule(@Body() createScheduleDto: CreateDoctorScheduleDto, @Req() req) {
-    return this.doctorService.createSchedule(createScheduleDto, req.user);
+  @Post('add')
+  create(@Body() createDoctorDto: CreateDoctorDto, @Req() req) {
+    const createdBy = req.user.userId;
+    return this.doctorService.create(createDoctorDto,createdBy);
   }
 
-  @Get('schedule')
-  @UseGuards(JwtAuthGuard)
-  async getDoctorSchedule(@Query('doctorId') doctorId: string, @Query('date') date: string) {
-    return this.doctorService.getDoctorSchedule(doctorId, new Date(date));
+  @Put('update/:id')
+  update(@Param('id') id: string, @Body() updateDoctorDto: UpdateDoctorDto, @Req() req) {
+    const updatedBy = req.user.userId;
+    return this.doctorService.update(id, updateDoctorDto, updatedBy);
   }
 
-  @Put('schedule/:id')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN, UserRole.DOCTOR)
-  async updateSchedule(@Param('id') id: string, @Body() updateScheduleDto: UpdateDoctorScheduleDto, @Req() req) {
-    return this.doctorService.updateSchedule(id, updateScheduleDto, req.user);
+  @Delete('remove')
+  async remove(@Body('ids') ids: string | string[], @Req() req) {
+    const deletedBy = req.user.userId
+    return this.doctorService.remove(ids, deletedBy);
   }
 
-  @Delete('schedule/:id')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN, UserRole.DOCTOR)
-  async deleteSchedule(@Param('id') id: string, @Req() req) {
-    return this.doctorService.deleteSchedule(id, req.user);
+  @Get('get')
+  findAll() {
+    return this.doctorService.findAll();
   }
+
+  @Get('get/:id')
+  findOne(@Param('id') id: string) {
+    return this.doctorService.findOne(id);
+  }
+
+ 
 }

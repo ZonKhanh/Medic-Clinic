@@ -3,7 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import { CreateUserDto } from "../users/dto/create-user.dto";
 import { UserService } from "../users/user.service";
 import * as bcrypt from 'bcrypt';
-import { UserStatus, UserRole, Gender } from "src/config/constants";
+import { Status, UserRole, Gender } from "src/config/constants";
 import { User, UserDocument } from "../users/schema/user.schema";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model } from "mongoose";
@@ -48,7 +48,7 @@ export class AuthService {
             password: hashedPassword,
             role: UserRole.PATIENT, 
             gender: Gender.MALE, 
-            status: UserStatus.ACTIVE, 
+            status: Status.ACTIVE, 
             avatarUrl
         });
 
