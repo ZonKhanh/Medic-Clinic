@@ -35,6 +35,13 @@ export enum AcademicDegree {
   PROFESSOR = 3, // Giáo sư
 }
 
+//
+export enum BenifitCode {
+  DISCOUNT80 = 0,
+  DISCOUNT95 = 1,
+  DISCOUNT100 = 2,
+}
+
 // config/constants.ts
 type SizeConfig = {
   width: number | 'auto';

@@ -1,12 +1,13 @@
 import { HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { Department, DepartmentDocument } from './schema/department.schema';
 import { CreateDepartmentDto } from './dto/create-department.dto';
 import { UpdateDepartmentDto } from './dto/update-department.dto';
 import { Status } from 'src/config/constants';
 import ErrorService from 'src/config/errors';
 import { nowTime } from 'src/utils/timeUtil';
+import { PaginationSortDto } from '../PaginationSort.dto ';
 
 @Injectable()
 export class DepartmentService {
@@ -23,24 +24,74 @@ export class DepartmentService {
 
         const createdDepartment = new this.departmentModel({
             ...createDepartmentDto,
-            createdBy, // Gán createdBy từ DTO
+            createdBy: new Types.ObjectId(createdBy)
         });
         return createdDepartment.save();
     }
 
 
-    async findAll(status?: Status): Promise<Department[]> {
-        const query = status ? { status } : {};
-        return this.departmentModel.find(query).populate('doctors').exec();
-    }
-
-    async findOne(id: string): Promise<Department> {
-        const department = await this.departmentModel.findById(id).populate('doctors').exec();
-        if (!department) {
-            throw new HttpException(ErrorService.DEPARTMENT_NOT_FOUND.message, HttpStatus.BAD_REQUEST);
+    async getAllDepartments(
+        query: any = {}, 
+        paginationSortDto: PaginationSortDto
+      ): Promise<{ departments: (Department & { doctorCount: number })[], total: number, page: number, limit: number }> {
+        const { page = 1, limit = 10, sortBy = 'createdAt', sortOrder = 'desc', search } = paginationSortDto;
+        const skip = (page - 1) * limit;
+      
+        const sortOptions = { [sortBy]: sortOrder };
+      
+        query.status = Status.ACTIVE;
+      
+        if (search) {
+          const searchRegex = new RegExp(search, 'i');
+          query.$or = [
+            { title: searchRegex },
+            { description: searchRegex }
+          ];
         }
+      
+        const [departments, total] = await Promise.all([
+          this.departmentModel.find(query)
+            .select('title description doctors')
+            .sort(sortOptions)
+            .skip(skip)
+            .limit(limit)
+            .lean(),
+          this.departmentModel.countDocuments(query)
+        ]);
+      
+        if (!departments || departments.length === 0) {
+          throw new HttpException('Không tìm thấy phòng ban', HttpStatus.NOT_FOUND);
+        }
+      
+        // Thêm trường doctorCount vào mỗi department
+        const departmentsWithCount = departments.map(dept => ({
+          ...dept,
+          doctorCount: dept.doctors.length
+        }));
+      
+        return {
+          departments: departmentsWithCount,
+          total,
+          page: Number(page),
+          limit: Number(limit)
+        };
+      }
+      
+
+      async findOne(id: string): Promise<Department> {
+
+        const department = await this.departmentModel.findOne({ _id: id, status: Status.ACTIVE })
+          .populate('doctors')
+          .exec();
+      
+        if (!department) {
+          // Ném ra lỗi nếu không tìm thấy phòng ban hoặc phòng ban không active
+          throw new HttpException(ErrorService.DEPARTMENT_NOT_FOUND.message, HttpStatus.BAD_REQUEST);
+        }
+      
         return department;
-    }
+      }
+      
 
     async update(id: string, updateDepartmentDto: UpdateDepartmentDto, updatedBy: string): Promise<Department> {
 
@@ -54,7 +105,7 @@ export class DepartmentService {
                 id,
                 {
                     ...updateDepartmentDto,
-                    updatedBy,
+                    updatedBy: new Types.ObjectId(updatedBy)
                 },
                 { new: true }
             )
@@ -72,9 +123,9 @@ export class DepartmentService {
                 id,
                 {
                     ...updateDepartmentDto, 
-                    deletedBy, 
+                    deletedBy: new Types.ObjectId(deletedBy),
                     deletedAt: nowTime, 
-                    status: Status.SUSPENDED,
+                    status: Status.SUSPENDED
                 },
                 { new: true }
             )

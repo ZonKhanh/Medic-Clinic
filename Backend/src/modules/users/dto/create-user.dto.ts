@@ -1,6 +1,7 @@
-import { IsString, IsNotEmpty, IsOptional, IsEmail, IsEnum, MaxLength, MinLength, ValidateNested } from "class-validator";
+import { IsString, IsNotEmpty, IsOptional, IsEmail, IsEnum, MaxLength, MinLength, ValidateNested, IsMongoId } from "class-validator";
 import { Gender, UserRole, Status } from "src/config/constants";
 import { Type } from 'class-transformer';
+import { Types } from "mongoose";
 
 export class CreateUserDto {
   @IsString()
@@ -42,6 +43,11 @@ export class CreateUserDto {
   @Type(() => Date)
   dob?: Date;
 
+  @IsString()
+  @IsOptional()
+  @MaxLength(20)
+  nationalId?: string;
+
   @IsEnum(UserRole)
   @IsNotEmpty()
   role: UserRole;
@@ -56,8 +62,7 @@ export class CreateUserDto {
   avatarUrl?: string;
 
   @IsOptional()
-  @IsString()
-  createdBy?: string;
-
+  @IsMongoId()
+  createdBy?: Types.ObjectId;
 
 }

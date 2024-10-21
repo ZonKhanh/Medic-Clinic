@@ -22,13 +22,13 @@ export class Department {
     status: Status;
 
     @Prop({ type: Types.ObjectId, ref: 'User' })
-    createdBy: User;
+    createdBy: Types.ObjectId;
 
     @Prop({ type: Types.ObjectId, ref: 'User' })
-    updatedBy: User;
+    updatedBy: Types.ObjectId;
 
     @Prop({ type: Types.ObjectId, ref: 'User' })
-    deletedBy: User;
+    deletedBy: Types.ObjectId;
 
     @Prop()
     deletedAt?: Date;

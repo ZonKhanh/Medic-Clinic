@@ -9,6 +9,7 @@ import { extname } from 'path';
 import { Roles } from "../auth/decorators/roles.decorator";
 import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 import { RolesGuard } from "../auth/guards/role.guard";
+import { PaginationSortDto } from "../PaginationSort.dto ";
 
 @Controller('/api/v1/user')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -22,9 +23,9 @@ export class UserController {
         return this.userService.create(createUserDto, createdBy);
     }
 
-    @Get()
-    async getAllUsers(@Query() query: any) {
-        return this.userService.findAllUsers(query);
+    @Get('get')
+    async getAllUsers(@Query() paginationSortDto: PaginationSortDto) {
+        return this.userService.findAllUsers({}, paginationSortDto);
     }
 
     @Get('get/:id')

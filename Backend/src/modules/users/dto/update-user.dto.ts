@@ -1,6 +1,7 @@
-import { IsString, IsOptional, IsEmail, IsEnum, MaxLength, MinLength, IsNotEmpty } from "class-validator";
+import { IsString, IsOptional, IsEmail, IsEnum, MaxLength, MinLength, IsNotEmpty, IsMongoId } from "class-validator";
 import { Gender, UserRole, Status } from "src/config/constants";
 import { Type } from 'class-transformer';
+import { Types } from "mongoose";
 
 export class UpdateUserDto {
   @IsString()
@@ -20,7 +21,6 @@ export class UpdateUserDto {
 
   @IsString()
   @IsOptional()
-  // @MinLength(8)
   @MaxLength(100)
   password?: string;
 
@@ -54,9 +54,9 @@ export class UpdateUserDto {
   @IsOptional()
   @MaxLength(255)
   avatarUrl?: string;
-
-  @IsString()
+  
   @IsNotEmpty()
-  updatedBy?: string;
+  @IsMongoId()
+  updatedBy?: Types.ObjectId;
   
 }

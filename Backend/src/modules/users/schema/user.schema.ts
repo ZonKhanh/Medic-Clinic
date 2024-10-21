@@ -22,7 +22,7 @@ export class User {
   @Prop({ required: true, maxlength: 100 })
   password: string;
 
-  @Prop({ required: true, unique: true, maxlength: 20, sparse: true, trim: true })
+  @Prop({ required: false, unique: true, maxlength: 20, sparse: true, trim: true })
   phoneNumber?: string;
 
   @Prop({ maxlength: 255, trim: true })
@@ -30,6 +30,12 @@ export class User {
 
   @Prop({ enum: Gender })
   gender?: Gender;
+
+  @Prop({ type: Date })
+  dob: Date;
+
+  @Prop({ unique: true, maxlength: 20 })
+  nationalId?: string;
 
   @Prop({ required: true, enum: UserRole, index: true })
   role: UserRole;
@@ -51,6 +57,7 @@ export class User {
 
   @Prop({ type: Date })
   deletedAt?: Date;
+
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
@@ -58,6 +65,15 @@ export const UserSchema = SchemaFactory.createForClass(User);
 UserSchema.index({ email: 1, phoneNumber: 1 });
 UserSchema.index({ role: 1, status: 1 });
 
-UserSchema.virtual('fullName').get(function(this: User) {
-  return `${this.firstName} ${this.lastName}`;
-});
+
+// UserSchema.virtual('fullName').get(function() {
+//   return `${this.firstName} ${this.lastName}`;
+// });
+
+// UserSchema.set('toJSON', {
+//   virtuals: true,
+//   transform: function(doc, ret) {
+//     ret.fullName = `${ret.firstName} ${ret.lastName}`;
+//     return ret;
+//   }
+// });

@@ -20,12 +20,12 @@ export class UpdateDepartmentDto {
     @IsOptional()
     status?: Status;
 
-    @IsString()
     @IsNotEmpty()
+    @IsMongoId()
     updatedBy?: string;
 
-    @IsString()
     @IsNotEmpty()
+    @IsMongoId()
     deletedBy?: string;
 
     @IsOptional()

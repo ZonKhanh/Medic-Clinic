@@ -21,9 +21,8 @@ export class CreateDepartmentDto {
     @IsOptional()
     status: Status = Status.ACTIVE;
 
-    @IsString()
+    @IsMongoId()
     @IsOptional()
-    // @IsNotEmpty()
     createdBy?: string;
 
     @IsOptional()

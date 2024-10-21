@@ -8,6 +8,7 @@ import { DepartmentModule } from './modules/departments/department.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { SharedModule } from './SharedModule';
+import { PatientModule } from './modules/patients/patient.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { SharedModule } from './SharedModule';
     UserModule,
     DoctorModule,
     DepartmentModule,
+    PatientModule,
     SharedModule
   ],
   controllers: [AppController],
